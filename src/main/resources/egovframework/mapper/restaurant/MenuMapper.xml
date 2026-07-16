@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.restaurant.service.impl.MenuMapper">
+
+	<select id="selectMenuList"
+	        parameterType="map"
+	        resultType="egovframework.restaurant.vo.MenuVO">
+	
+	    SELECT
+	        M.MENU_ID AS menuId,
+	        M.MENU_NAME AS menuName,
+	        M.PRICE AS price,
+	        MF.FILE_ID AS fileId,
+	        MF.ORIGINAL_NAME AS originalFileName
+	    FROM MENU M
+	    LEFT JOIN MENU_FILE MF
+	        ON M.MENU_ID = MF.MENU_ID
+	
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        WHERE M.MENU_NAME LIKE '%' || #{searchKeyword} || '%'
+	    </if>
+	
+	    ORDER BY M.MENU_ID
+	    OFFSET #{offset} ROWS
+	    FETCH NEXT #{pageSize} ROWS ONLY
+	
+	</select>
+	
+	<select id="selectMenuCount"
+        parameterType="String"
+        resultType="int">
+
+    SELECT COUNT(*)
+    FROM MENU
+
+    <if test="searchKeyword != null and searchKeyword != ''">
+        WHERE MENU_NAME LIKE '%' || #{searchKeyword} || '%'
+    </if>
+
+	</select>
+    
+	<insert id="insertMenu" parameterType="egovframework.restaurant.vo.MenuVO">
+	
+	    <selectKey keyProperty="menuId"
+	               resultType="int"
+	               order="BEFORE">
+	        SELECT MENU_SEQ.NEXTVAL
+	        FROM DUAL
+	    </selectKey>
+	
+	    INSERT INTO MENU (MENU_ID, MENU_NAME, PRICE)
+	    VALUES (#{menuId}, #{menuName}, #{price})
+	
+	</insert>
+
+	<update id="updateMenu" parameterType="egovframework.restaurant.vo.MenuVO">
+    	UPDATE MENU
+       	SET MENU_NAME = #{menuName},
+        PRICE = #{price}
+     	WHERE MENU_ID = #{menuId}
+	</update>
+
+	<delete id="deleteMenu" parameterType="int">
+    	DELETE FROM MENU
+     	WHERE MENU_ID = #{menuId}
+	</delete>
+
+</mapper>
